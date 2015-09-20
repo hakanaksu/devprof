@@ -4,7 +4,7 @@ This Application identifies API experience of developers who are involved in a s
 
 GET STARTED
 
-First you import this application to your IDE. Then you create a derby connection profile and select the ?Derby Embedded JDBC Driver?.
+First you import this application to your IDE. Then you create a derby connection profile and select the Derby Embedded JDBC Driver.
 Additionally you have to choose a user name and password and set a local url.
 The user name, password and local url must be applied in the persistence.xml file, too.
 The current values in the properties part are:
@@ -13,10 +13,8 @@ The current values in the properties part are:
 <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
 <property name="javax.persistence.jdbc.user" value="profiler"/>
 <property name="javax.persistence.jdbc.password" value="profiler"/>
-The values have to be the chosen ones.
 ```
-
-Other database types should be possible, too.
+The values have to be the chosen ones.
 
 In three main steps you can extract the data of an repository and the APIs to get the API experience of every developer. Every main step has two sub steps.
 
