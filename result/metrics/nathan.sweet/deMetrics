@@ -1,0 +1,19 @@
+Domain;DE(Domain,DEV);DE(Domain)
+Archiving;21;36
+Basics;84;196
+Component;23;50
+Concurrency;18;105
+Configuration;51;109
+CrossPlatform;383;581
+Format;36;64
+GUI;586;1190
+IO;139;198
+Logging;0;6
+Math;3;6
+Media;363;821
+Meta;232;408
+Parsing;9;48
+Testing;0;1
+Web;50;395
+XML;13;191
+deDEV / de;2011;4405

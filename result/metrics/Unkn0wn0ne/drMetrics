@@ -1,0 +1,19 @@
+Domain;DR(Domain,DEV);DR(Domain)
+Archiving;0;605
+Basics;183;8521
+Component;2;536
+Concurrency;9;1498
+Configuration;36;2352
+CrossPlatform;6;8587
+Format;0;2189
+GUI;419;27822
+IO;0;13524
+Logging;0;25
+Math;0;69
+Media;58;18709
+Meta;176;18528
+Parsing;0;240
+Testing;0;7
+Web;0;5149
+XML;0;2377
+SUM(drDEV - dr);889;110738
