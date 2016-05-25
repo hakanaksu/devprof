@@ -14,6 +14,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -969,7 +970,21 @@ public class PersistenceHandler implements AutoCloseable{
 		if (!em.getTransaction().isActive()) {
 			em.getTransaction().begin();
 		}
-		List<String> result= em.createNativeQuery("select PACKAGE.PACKAGENAME from PACKAGE,DOMAIN where PACKAGE.DOMAIN_ID = DOMAIN.ID order by DOMAIN.DOMAIN").getResultList();
+		List<String> result= em.createNativeQuery("select PACKAGE.PACKAGENAME from PACKAGE,DOMAIN where PACKAGE.DOMAIN_ID = DOMAIN.ID order by DOMAIN.DOMAIN, PACKAGE.PACKAGENAME").getResultList();
+		em.getTransaction().commit();
+		return result;
+	}
+	
+	/**
+	 * Used by MetricExtractor
+	 * 
+	 * @return
+	 */
+	public List<String> getAPIs(String domain) {
+		if (!em.getTransaction().isActive()) {
+			em.getTransaction().begin();
+		}
+		List<String> result= em.createNativeQuery("select PACKAGE.PACKAGENAME from PACKAGE,DOMAIN where PACKAGE.DOMAIN_ID = DOMAIN.ID and DOMAIN.DOMAIN = '"+domain+"' order by PACKAGE.PACKAGENAME").getResultList();
 		em.getTransaction().commit();
 		return result;
 	}
@@ -1154,7 +1169,7 @@ public class PersistenceHandler implements AutoCloseable{
 		int result = result1 + result2 + result3;
 		return result;
 	}
-
+	
 	/**
 	 * Used by MetricExtractor
 	 * 
@@ -1349,6 +1364,242 @@ public class PersistenceHandler implements AutoCloseable{
 		int result = result1 + result2 + result3;
 		return result;
 	}
-    
+	
+	
+	/*
+	  
+	  Unit Codes (Anzahl der Referenzen in Dateien) pro Domain
+		SELECT cf.FILENAME FROM DOMAIN d, PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = 'GUI' and d.ID = p.DOMAIN_ID and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY d.DOMAIN, cf.FILENAME;
+		SELECT cf.FILENAME FROM DOMAIN d, PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = 'GUI' and d.ID = p.DOMAIN_ID and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY d.DOMAIN, cf.FILENAME;
+		SELECT cf.FILENAME FROM DOMAIN d, PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = 'GUI' and d.ID = p.DOMAIN_ID and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY d.DOMAIN, cf.FILENAME;
+		
+	  Unit Codes (Anzahl der Referenzen in Dateien) pro API
+		SELECT cf.FILENAME FROM PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = 'java.awt' and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY p.PACKAGENAME, cf.FILENAME;
+		SELECT cf.FILENAME FROM PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = 'java.awt' and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY p.PACKAGENAME, cf.FILENAME;
+		SELECT cf.FILENAME FROM PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = 'java.awt' and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY p.PACKAGENAME, cf.FILENAME;
+		
+		
+		
+	  Package References pro Domain
+		SELECT cf.PACKAGENAME FROM DOMAIN d, PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = 'GUI' and d.ID = p.DOMAIN_ID and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY d.DOMAIN, cf.PACKAGENAME;
+		SELECT cf.PACKAGENAME FROM DOMAIN d, PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = 'GUI' and d.ID = p.DOMAIN_ID and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY d.DOMAIN, cf.PACKAGENAME;
+		SELECT cf.PACKAGENAME FROM DOMAIN d, PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = 'GUI' and d.ID = p.DOMAIN_ID and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY d.DOMAIN, cf.PACKAGENAME;
+		
+	  Package References pro API
+		SELECT cf.PACKAGENAME FROM PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = 'java.awt' and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY p.PACKAGENAME, cf.PACKAGENAME;
+		SELECT cf.PACKAGENAME FROM PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = 'java.awt' and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY p.PACKAGENAME, cf.PACKAGENAME;
+		SELECT cf.PACKAGENAME FROM PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = 'java.awt' and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = 'nathan.sweet' GROUP BY p.PACKAGENAME, cf.PACKAGENAME;
+	 
+	 
+	 
+	 
+	 */
+  
+	
+	/**
+	 * Used by MetricExtractor
+	 * 
+	 * @param domain
+	 * @param dev
+	 * @return
+	 */
+	public int getDomainReferencesInFiles(String domain, String dev) {
+		if (!em.getTransaction().isActive()) {
+			em.getTransaction().begin();
+		}
+		List<String> result1;
+		List<String> result2;
+		List<String> result3;
+		try{
+			result1 = em.createNativeQuery("SELECT cf.FILENAME FROM DOMAIN d, PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = '"+domain+"' and d.ID = p.DOMAIN_ID and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY d.DOMAIN, cf.PACKAGENAME, cf.FILENAME").getResultList();			
+		} catch(NoResultException ex) {
+			result1 = new LinkedList<>();
+		}
+		try{
+			result2 = em.createNativeQuery("SELECT cf.FILENAME FROM DOMAIN d, PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = '"+domain+"' and d.ID = p.DOMAIN_ID and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY d.DOMAIN, cf.PACKAGENAME, cf.FILENAME").getResultList();
+		} catch(NoResultException ex) {
+			result2 = new LinkedList<>();
+		}
+		try{
+			result3 = em.createNativeQuery("SELECT cf.FILENAME FROM DOMAIN d, PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = '"+domain+"' and d.ID = p.DOMAIN_ID and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY d.DOMAIN, cf.PACKAGENAME, cf.FILENAME").getResultList();
+		} catch(NoResultException ex) {
+			result3 = new LinkedList<>();
+		}
+		em.getTransaction().commit();
+		int result = result1.size() + result2.size() + result3.size();
+		return result;
+	}
+	
+	/**
+	 * Used by MetricExtractor
+	 * 
+	 * @param api
+	 * @param dev
+	 * @return
+	 */
+	public int getApiReferencesInFiles(String api, String dev) {
+		if (!em.getTransaction().isActive()) {
+			em.getTransaction().begin();
+		}
+		List<String> result1;
+		List<String> result2;
+		List<String> result3;
+		try{
+			result1 = em.createNativeQuery("SELECT cf.FILENAME FROM PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = '"+api+"' and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY p.PACKAGENAME, cf.PACKAGENAME, cf.FILENAME").getResultList();			
+		} catch(NoResultException ex) {
+			result1 = new LinkedList<>();
+		}
+		try{
+			result2 = em.createNativeQuery("SELECT cf.FILENAME FROM PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = '"+api+"' and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY p.PACKAGENAME, cf.PACKAGENAME, cf.FILENAME").getResultList();
+		} catch(NoResultException ex) {
+			result2 = new LinkedList<>();
+		}
+		try{
+			result3 = em.createNativeQuery("SELECT cf.FILENAME FROM PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = '"+api+"' and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY p.PACKAGENAME, cf.PACKAGENAME, cf.FILENAME").getResultList();
+		} catch(NoResultException ex) {
+			result3 = new LinkedList<>();
+		}
+		em.getTransaction().commit();
+		int result = result1.size() + result2.size() + result3.size();
+		return result;
+	}
+	
+	/**
+	 * Used by MetricExtractor
+	 * 
+	 * @param domain
+	 * @param dev
+	 * @return
+	 */
+	public int getDomainReferencesInPackages(String domain, String dev) {
+		if (!em.getTransaction().isActive()) {
+			em.getTransaction().begin();
+		}
+		List<String> result1;
+		List<String> result2;
+		List<String> result3;
+		try{
+			result1 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM DOMAIN d, PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = '"+domain+"' and d.ID = p.DOMAIN_ID and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY d.DOMAIN, cf.PACKAGENAME").getResultList();			
+		} catch(NoResultException ex) {
+			result1 = new LinkedList<>();
+		}
+		try{
+			result2 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM DOMAIN d, PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = '"+domain+"' and d.ID = p.DOMAIN_ID and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY d.DOMAIN, cf.PACKAGENAME").getResultList();
+		} catch(NoResultException ex) {
+			result2 = new LinkedList<>();
+		}
+		try{
+			result3 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM DOMAIN d, PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE d.DOMAIN = '"+domain+"' and d.ID = p.DOMAIN_ID and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY d.DOMAIN, cf.PACKAGENAME").getResultList();
+		} catch(NoResultException ex) {
+			result3 = new LinkedList<>();
+		}
+		em.getTransaction().commit();
+		int result = result1.size() + result2.size() + result3.size();
+		return result;
+	}
+	
+	/**
+	 * Used by MetricExtractor
+	 * 
+	 * @param api
+	 * @param dev
+	 * @return
+	 */
+	public int getApiReferencesInPackages(String api, String dev) {
+		if (!em.getTransaction().isActive()) {
+			em.getTransaction().begin();
+		}
+		List<String> result1;
+		List<String> result2;
+		List<String> result3;
+		try{
+			result1 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = '"+api+"' and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY p.PACKAGENAME, cf.PACKAGENAME").getResultList();			
+		} catch(NoResultException ex) {
+			result1 = new LinkedList<>();
+		}
+		try{
+			result2 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = '"+api+"' and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY p.PACKAGENAME, cf.PACKAGENAME").getResultList();
+		} catch(NoResultException ex) {
+			result2 = new LinkedList<>();
+		}
+		try{
+			result3 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf, VERSION v WHERE p.PACKAGENAME = '"+api+"' and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID and cf.VERSION_ID = v.ID and v.DEVELOPER = '"+dev+"' GROUP BY p.PACKAGENAME, cf.PACKAGENAME").getResultList();
+		} catch(NoResultException ex) {
+			result3 = new LinkedList<>();
+		}
+		em.getTransaction().commit();
+		int result = result1.size() + result2.size() + result3.size();
+		return result;
+	}
+	
+	/**
+	 * Used by MetricExtractor
+	 * 
+	 * @param api
+	 * @param dev
+	 * @return
+	 */
+	public int getApiReferencesInFiles(String api) {
+		if (!em.getTransaction().isActive()) {
+			em.getTransaction().begin();
+		}
+		List<String> result1;
+		List<String> result2;
+		List<String> result3;
+		try{
+			result1 = em.createNativeQuery("SELECT cf.FILENAME FROM PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf WHERE p.PACKAGENAME = '"+api+"' and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID GROUP BY p.PACKAGENAME, cf.PACKAGENAME, cf.FILENAME").getResultList();			
+		} catch(NoResultException ex) {
+			result1 = new LinkedList<>();
+		}
+		try{
+			result2 = em.createNativeQuery("SELECT cf.FILENAME FROM PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf WHERE p.PACKAGENAME = '"+api+"' and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID GROUP BY p.PACKAGENAME, cf.PACKAGENAME, cf.FILENAME").getResultList();
+		} catch(NoResultException ex) {
+			result2 = new LinkedList<>();
+		}
+		try{
+			result3 = em.createNativeQuery("SELECT cf.FILENAME FROM PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf WHERE p.PACKAGENAME = '"+api+"' and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID GROUP BY p.PACKAGENAME, cf.PACKAGENAME, cf.FILENAME").getResultList();
+		} catch(NoResultException ex) {
+			result3 = new LinkedList<>();
+		}
+		em.getTransaction().commit();
+		int result = result1.size() + result2.size() + result3.size();
+		return result;
+	}
+	
+	/**
+	 * Used by MetricExtractor
+	 * 
+	 * @param api
+	 * @param dev
+	 * @return
+	 */
+	public int getApiReferencesInPackages(String api) {
+		if (!em.getTransaction().isActive()) {
+			em.getTransaction().begin();
+		}
+		List<String> result1;
+		List<String> result2;
+		List<String> result3;
+		try{
+			result1 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM PACKAGE p, CLASSIFIER c, CLASSIFIER_CHANGEDLINE ccl, CHANGEDLINE cl, CHANGEDFILE cf WHERE p.PACKAGENAME = '"+api+"' and p.ID = c.PACK_ID and c.ID = ccl.CLASSIFIER_ID and ccl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID GROUP BY p.PACKAGENAME, cf.PACKAGENAME").getResultList();			
+		} catch(NoResultException ex) {
+			result1 = new LinkedList<>();
+		}
+		try{
+			result2 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM PACKAGE p, METHODENTITY m, METHODENTITY_CHANGEDLINE mcl, CHANGEDLINE cl, CHANGEDFILE cf WHERE p.PACKAGENAME = '"+api+"' and p.ID = m.PACK_ID and m.ID = mcl.METHODS_ID and mcl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID GROUP BY p.PACKAGENAME, cf.PACKAGENAME").getResultList();
+		} catch(NoResultException ex) {
+			result2 = new LinkedList<>();
+		}
+		try{
+			result3 = em.createNativeQuery("SELECT cf.PACKAGENAME FROM PACKAGE p, ENUMCONSTANT e, ENUMCONSTANT_CHANGEDLINE ecl, CHANGEDLINE cl, CHANGEDFILE cf WHERE p.PACKAGENAME = '"+api+"' and p.ID = e.PACK_ID and e.ID = ecl.ENUMS_ID and ecl.CHANGEDLINES_ID = cl.ID and cl.CHANGEDFILE_ID = cf.ID GROUP BY p.PACKAGENAME, cf.PACKAGENAME").getResultList();
+		} catch(NoResultException ex) {
+			result3 = new LinkedList<>();
+		}
+		em.getTransaction().commit();
+		int result = result1.size() + result2.size() + result3.size();
+		return result;
+	}
+
+
 }
     

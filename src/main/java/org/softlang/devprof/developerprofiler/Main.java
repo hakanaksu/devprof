@@ -13,6 +13,8 @@ import org.softlang.devprof.extractor.ApiExtractor;
 import org.softlang.devprof.extractor.ApiUsageExtractor;
 import org.softlang.devprof.extractor.GITRepositoryExtractor;
 import org.softlang.devprof.extractor.MetricExtractor;
+import org.softlang.devprof.extractor.MetricExtractor2;
+import org.softlang.devprof.extractor.MetricExtractor3;
 import org.softlang.devprof.helper.PackageModifier;
 import org.softlang.devprof.persistence.entities.Domain;
 import org.softlang.devprof.persistence.entities.Package;
@@ -25,13 +27,14 @@ public class Main {
         /****************************************************************/
         /**********************     Step 1.1    *************************/
         /****************************************************************/
-		
+		/*
 		GITRepositoryExtractor gitRepositoryExtractor = new GITRepositoryExtractor("https://github.com/libgdx/libgdx.git", null, null);
 		gitRepositoryExtractor.extractData();
-		
+		*/
         /****************************************************************/
         /**********************     Step 1.2    *************************/
         /****************************************************************/
+		/*
 		PackageModifier packageModifier = new PackageModifier();
 		
 		packageModifier.eliminationStatic();
@@ -132,7 +135,7 @@ public class Main {
 		packageModifier.deletePackage("cli.objectal"); 								//API not found
 		packageModifier.deletePackage("cli.OpenTK"); 								//API not found
 		packageModifier.deletePackage("cli.System"); 								//API not found
-		
+		*/
         /****************************************************************/
         /**********************     Step 2.1    *************************/
         /****************************************************************/
@@ -140,7 +143,7 @@ public class Main {
 		/*
 		 * extract information of APIs
 		 */
-		
+		/*
 		ApiExtractor apiExtractor;
 		File api;
 		
@@ -358,13 +361,13 @@ public class Main {
 		apiExtractor = new ApiExtractor(new URL("file:"+api.getAbsolutePath()));
 		
 		apiExtractor.extractData("tv.ouya.console.api", true);
-		
+		*/
 		
 		
 		/****************************************************************/
         /**********************     Step 2.2    *************************/
         /****************************************************************/
-		
+		/*
 		Domain domain;
 		
 		domain = packageModifier.addDomain("GUI");
@@ -502,14 +505,14 @@ public class Main {
 		String[] testingnAPIs = {"org.junit"};
 		packageModifier.addApiToDomain(testingnAPIs, domain);
 		
-		
+		*/
 		/****************************************************************/
         /**********************     Step 3.1    *************************/
         /****************************************************************/
 		
-		ApiUsageExtractor apiUsageExtractor = new ApiUsageExtractor();
 		int[] unqualifiedRevisions = {25,54,110,111,451,453,648,1724,2195,2197,2526,3011,3221,3315,3511,3556,3735,3736,4955,4117,4656,4657,4757,4832,4854,4955,5713,5739,5743,6451,6868,7329,7338,7363,7985,8389,8467,8531,8945,9214};
-
+		/*
+		ApiUsageExtractor apiUsageExtractor = new ApiUsageExtractor();
 		apiUsageExtractor.extractData(0, 5000, unqualifiedRevisions);
 		apiUsageExtractor.extractData(5001, 50000, unqualifiedRevisions);
 		apiUsageExtractor.extractData(50001, 60000, unqualifiedRevisions);
@@ -545,12 +548,12 @@ public class Main {
 		apiUsageExtractor.extractData(1200001, 1250000, unqualifiedRevisions);
 		apiUsageExtractor.extractData(1250001, 1300000, unqualifiedRevisions);
 		apiUsageExtractor.extractData(1300001, 1350000, unqualifiedRevisions);
-		
+		*/
 		/****************************************************************/
         /**********************     Step 3.2    *************************/
         /****************************************************************/
 		
-		MetricExtractor metricExtractor = new MetricExtractor(unqualifiedRevisions);
+		MetricExtractor3 metricExtractor = new MetricExtractor3(unqualifiedRevisions);
 		metricExtractor.extractData();
 		
 	}
